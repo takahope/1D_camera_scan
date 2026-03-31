@@ -10,17 +10,78 @@
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: #0f172a;
-      color: #f1f5f9;
-      height: 100dvh;
+      background: #e8ecf0;
+      min-height: 100dvh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    /* ===== 卡片容器（比照舊版樣式）===== */
+    .scanner-card {
+      background: #ffffff;
+      border-radius: 16px;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.18);
+      width: 100%;
+      max-width: 440px;
       overflow: hidden;
     }
 
-    /* 相機預覽區 */
-    #scanner-container {
+    /* 卡片標題列 */
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px 14px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .card-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 17px;
+      font-weight: 600;
+      color: #1a1a2e;
+    }
+
+    .card-title-icon {
+      width: 32px;
+      height: 32px;
+      background: #e8f0fe;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+
+    .card-close {
+      width: 32px;
+      height: 32px;
+      background: none;
+      border: none;
+      font-size: 20px;
+      color: #4a90e2;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      transition: background 0.15s;
+      font-weight: 300;
+    }
+    .card-close:hover { background: #f0f4ff; }
+
+    /* ===== 相機預覽區（限縮在卡片內）===== */
+    .camera-wrapper {
       position: relative;
-      width: 100vw;
-      height: 100dvh;
+      width: 100%;
+      /* 固定高度，不全螢幕 */
+      height: 280px;
+      background: #111;
+      overflow: hidden;
     }
 
     #scanner-reader {
@@ -28,14 +89,13 @@
       height: 100%;
     }
 
-    /* Quagga 產生的 video 和 canvas */
     #scanner-reader video {
       width: 100%;
       height: 100%;
       object-fit: cover;
     }
 
-    /* Quagga debug canvas — 對齊 video，用於繪製辨識框 */
+    /* Quagga debug canvas */
     #scanner-reader canvas {
       position: absolute;
       top: 0;
@@ -44,20 +104,18 @@
       height: 100%;
     }
 
-    /* ===== 掃描框 UI ===== */
+    /* 掃描框 */
     .scan-frame {
       position: absolute;
       top: 50%;
       left: 50%;
-      transform: translate(-50%, -60%);
-      /* 1D 條碼偏寬扁，高度縮小有助於使用者對準 */
-      width: min(85vw, 420px);
-      height: 130px;
-      border: 2px solid rgba(74, 144, 226, 0.85);
+      transform: translate(-50%, -50%);
+      width: calc(100% - 40px);
+      height: 110px;
+      border: 2px solid rgba(74, 144, 226, 0.9);
       border-radius: 10px;
       pointer-events: none;
-      /* 四周遮罩，引導使用者對準框內 */
-      box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.4);
     }
 
     /* 四角標記 */
@@ -65,13 +123,13 @@
     .scan-frame::after {
       content: '';
       position: absolute;
-      width: 22px;
-      height: 22px;
+      width: 18px;
+      height: 18px;
       border-color: #4a90e2;
       border-style: solid;
     }
-    .scan-frame::before { top: -2px; left: -2px; border-width: 3px 0 0 3px; border-radius: 8px 0 0 0; }
-    .scan-frame::after  { bottom: -2px; right: -2px; border-width: 0 3px 3px 0; border-radius: 0 0 8px 0; }
+    .scan-frame::before { top: -2px; left: -2px; border-width: 3px 0 0 3px; border-radius: 7px 0 0 0; }
+    .scan-frame::after  { bottom: -2px; right: -2px; border-width: 0 3px 3px 0; border-radius: 0 0 7px 0; }
 
     /* 掃描動畫線 */
     .scan-line {
@@ -89,120 +147,82 @@
       100% { top: 12%; opacity: 0.9; }
     }
 
-    /* 確認進度指示（多幀確認） */
+    /* 確認進度圓點 */
     .confirm-dots {
       position: absolute;
-      bottom: -28px;
+      bottom: -26px;
       left: 50%;
       transform: translateX(-50%);
       display: flex;
       gap: 6px;
     }
     .confirm-dot {
-      width: 8px;
-      height: 8px;
+      width: 7px;
+      height: 7px;
       border-radius: 50%;
-      background: rgba(255,255,255,0.3);
+      background: rgba(255,255,255,0.35);
       transition: background 0.2s;
     }
     .confirm-dot.active { background: #4ade80; }
 
-    /* 提示文字 */
-    .scan-hint {
+    /* 相機區底部提示文字 */
+    .camera-hint {
       position: absolute;
-      top: calc(50% - 118px);
-      left: 50%;
-      transform: translate(-50%, -100%);
-      font-size: 13px;
-      color: rgba(255,255,255,0.7);
-      white-space: nowrap;
-      pointer-events: none;
-      text-align: center;
-      line-height: 1.6;
-    }
-
-    /* 狀態列 */
-    #status {
-      position: absolute;
-      bottom: 0;
+      bottom: 10px;
       left: 0;
       right: 0;
-      padding: 14px 20px;
-      background: rgba(15, 23, 42, 0.88);
       text-align: center;
+      font-size: 12px;
+      color: rgba(255,255,255,0.7);
+      pointer-events: none;
+    }
+
+    /* ===== 狀態列 ===== */
+    #status {
+      padding: 12px 20px;
       font-size: 14px;
-      min-height: 54px;
+      text-align: center;
+      min-height: 46px;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
+      border-top: 1px solid #f0f0f0;
     }
 
-    #status.success { color: #4ade80; }
-    #status.error   { color: #f87171; }
-    #status.info    { color: #94a3b8; }
-    #status.pending { color: #fbbf24; }
-
-    /* 關閉按鈕 */
-    #close-btn {
-      position: absolute;
-      top: 16px;
-      right: 16px;
-      z-index: 20;
-      background: rgba(0, 0, 0, 0.55);
-      color: white;
-      border: 1px solid rgba(255,255,255,0.2);
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      font-size: 18px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: background 0.2s;
-    }
-    #close-btn:hover { background: rgba(231, 76, 60, 0.75); }
+    #status.info    { color: #555; background: #fafafa; }
+    #status.pending { color: #b45309; background: #fffbeb; }
+    #status.success { color: #166534; background: #dcfce7; }
+    #status.error   { color: #991b1b; background: #fee2e2; }
 
     /* ===== 降級 UI：手動輸入條碼 ===== */
     #fallback {
       display: none;
-      position: fixed;
-      inset: 0;
-      background: #0f172a;
-      padding: 40px 24px;
+      padding: 24px 20px;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      gap: 16px;
-      z-index: 30;
+      gap: 14px;
     }
 
-    #fallback h2 { font-size: 20px; font-weight: 600; }
-    #fallback p  { font-size: 14px; color: #94a3b8; text-align: center; line-height: 1.6; }
+    #fallback p { font-size: 13px; color: #666; text-align: center; line-height: 1.6; }
 
     #manual-input {
       width: 100%;
-      max-width: 360px;
-      padding: 14px 16px;
-      font-size: 18px;
+      padding: 12px 14px;
+      font-size: 17px;
       border-radius: 10px;
-      border: 2px solid #334155;
-      background: #1e293b;
-      color: #f1f5f9;
+      border: 2px solid #d1d5db;
+      background: #f9fafb;
+      color: #111;
       text-align: center;
       letter-spacing: 0.5px;
       outline: none;
       transition: border-color 0.2s;
     }
-    #manual-input:focus { border-color: #4a90e2; }
+    #manual-input:focus { border-color: #4a90e2; background: #fff; }
 
     #submit-btn {
       width: 100%;
-      max-width: 360px;
-      padding: 14px;
+      padding: 13px;
       background: #2563eb;
       color: white;
       border: none;
@@ -216,42 +236,56 @@
 
     #fallback-close {
       font-size: 13px;
-      color: #64748b;
+      color: #9ca3af;
       cursor: pointer;
       text-decoration: underline;
       background: none;
       border: none;
-      padding: 4px;
+      padding: 2px;
     }
   </style>
 </head>
 <body>
 
-<!-- 相機掃描 UI -->
-<div id="scanner-container">
-  <button id="close-btn" onclick="closeScanner()" aria-label="關閉">✕</button>
-  <div id="scanner-reader"></div>
-  <div class="scan-frame">
-    <div class="scan-line"></div>
-    <div class="confirm-dots">
-      <div class="confirm-dot" id="dot-0"></div>
-      <div class="confirm-dot" id="dot-1"></div>
+<!-- 卡片容器 -->
+<div class="scanner-card">
+
+  <!-- 標題列 -->
+  <div class="card-header">
+    <div class="card-title">
+      <div class="card-title-icon">📷</div>
+      條碼掃描
     </div>
+    <button class="card-close" onclick="closeScanner()" aria-label="關閉">✕</button>
   </div>
-  <div class="scan-hint">將條碼水平對準框內</div>
+
+  <!-- 相機預覽區（限縮在卡片內）-->
+  <div class="camera-wrapper">
+    <div id="scanner-reader"></div>
+    <div class="scan-frame">
+      <div class="scan-line"></div>
+      <div class="confirm-dots">
+        <div class="confirm-dot" id="dot-0"></div>
+        <div class="confirm-dot" id="dot-1"></div>
+      </div>
+    </div>
+    <div class="camera-hint">將條碼水平對準框內</div>
+  </div>
+
+  <!-- 狀態列 -->
   <div id="status" class="info">
     <span id="status-text">正在啟動相機...</span>
   </div>
-</div>
 
-<!-- 降級 UI：手動輸入 -->
-<div id="fallback">
-  <h2>請輸入條碼</h2>
-  <p>相機無法使用，請手動輸入或貼上條碼編號，<br>按 Enter 或點擊「確認」送出。</p>
-  <input type="text" id="manual-input" placeholder="輸入條碼..." autocomplete="off" autocorrect="off" spellcheck="false">
-  <button id="submit-btn" onclick="submitManual()">確認送出</button>
-  <button id="fallback-close" onclick="closeScanner()">關閉</button>
-</div>
+  <!-- 降級 UI：手動輸入（相機失敗時顯示）-->
+  <div id="fallback">
+    <p>相機無法使用，請手動輸入或貼上條碼編號，<br>按 Enter 或點擊「確認」送出。</p>
+    <input type="text" id="manual-input" placeholder="輸入條碼..." autocomplete="off" autocorrect="off" spellcheck="false">
+    <button id="submit-btn" onclick="submitManual()">確認送出</button>
+    <button id="fallback-close" onclick="closeScanner()">關閉</button>
+  </div>
+
+</div><!-- /scanner-card -->
 
 <script>
 (function () {
@@ -260,29 +294,18 @@
   // =============================================
   // 掃描準確度設定
   // =============================================
-
-  // 多幀確認：同一條碼需連續出現 CONFIRM_NEEDED 次才接受
-  // 提高此值可減少誤判，但反應較慢
-  var CONFIRM_NEEDED = 2;
-
-  // 確認視窗：兩次出現必須在此時間內（毫秒）
-  var CONFIRM_WINDOW_MS = 2500;
-
-  // 信心值閾值：Quagga 每幀為每個字元計算 error rate（越低越準）
-  // 平均 error > 此值的結果會被丟棄
-  // 0.10 = 嚴格（建議），0.15 = 寬鬆
-  var MAX_AVG_ERROR = 0.10;
+  var CONFIRM_NEEDED   = 2;     // 同一條碼需出現幾次才接受
+  var CONFIRM_WINDOW_MS = 2500; // 兩次出現的最大間隔（ms）
+  var MAX_AVG_ERROR    = 0.10;  // Quagga 信心值閾值（越低越嚴格）
 
   // =============================================
-  // 條碼格式化（與 GAS 端 Scanner_formatBarcode 保持一致）
+  // 條碼格式化（與 GAS 端保持一致）
   // =============================================
   function formatBarcode(barcode) {
     if (!barcode) return '';
     var clean = barcode.toString().trim();
-    // 20 碼去前 2 位
     var processed = clean.length === 20 ? clean.substring(2) : clean;
     if (processed.length < 11) return processed;
-    // 格式化為 XXXXXXX-XXXX-XXXXXXX
     return processed.substring(0, 7) + '-' +
            processed.substring(7, 11) + '-' +
            processed.substring(11);
@@ -332,7 +355,6 @@
   // =============================================
   // 多幀確認狀態
   // =============================================
-  // key: barcode string, value: { count, firstTime }
   var pendingMap = {};
 
   function resetConfirmState() {
@@ -365,24 +387,18 @@
         type: 'LiveStream',
         target: document.getElementById('scanner-reader'),
         constraints: {
-          // ideal 讓瀏覽器盡量選接近的解析度，不強制
-          // 較高解析度有助於辨識小型或模糊條碼
           width: { min: 640, ideal: 1280 },
           height: { min: 480, ideal: 720 },
           facingMode: { ideal: 'environment' }
-          // 不設 aspectRatio，讓裝置使用原生比例
         }
       },
       decoder: {
-        // 只啟用資產標籤常用的格式
-        // 減少 reader 數量可降低誤判率（cross-reader false positives）
         readers: [
-          'code_128_reader',  // 主要格式（大多數資產標籤）
-          'ean_reader',       // EAN-13
-          'code_39_reader'    // Code 39（部分舊設備）
+          'code_128_reader',
+          'ean_reader',
+          'code_39_reader'
         ],
         debug: {
-          // 不在 console 輸出大量 debug 資訊
           drawBoundingBox: false,
           showFrequency: false,
           drawScanline: false,
@@ -391,40 +407,30 @@
       },
       locate: true,
       locator: {
-        // large > medium > small，越大越準但越慢
-        // 資產掃描以準確優先，建議 large
         patchSize: 'large',
-        // halfSample: false → 使用完整解析度處理，提升準確度
-        // （原本 true 是為了效能，但會損失精度）
         halfSample: false
       },
-      // 使用較多 workers 加快平行處理
       numOfWorkers: (function() {
         var cores = navigator.hardwareConcurrency || 2;
         return Math.min(Math.max(cores - 1, 2), 4);
-      }()),
-      // 每秒處理的幀數（不設定則使用 Quagga 預設，約 15fps）
-      // frequency: 10
+      }())
     }, function (err) {
       if (err) {
         console.error('[Scanner] 初始化失敗:', err);
-        setStatus('error', '相機啟動失敗：' + (err.message || err));
+        setStatus('error', '相機啟動失敗，請手動輸入');
         showFallback();
         return;
       }
       Quagga.start();
       isScanning = true;
-
-      // 繪製偵測到的條碼位置（幫助使用者判斷對準效果）
       Quagga.onProcessed(onProcessed);
       Quagga.onDetected(onDetected);
-
-      setStatus('info', '請將條碼對準框內...');
+      setStatus('info', '掃描器運作中，請將條碼對準框內...');
     });
   }
 
   // =============================================
-  // 每幀處理結果：繪製偵測框
+  // 每幀處理：繪製偵測框
   // =============================================
   function onProcessed(result) {
     var ctx = Quagga.canvas.ctx.overlay;
@@ -432,39 +438,34 @@
     if (!ctx || !canvas) return;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-
     if (!result) return;
 
-    // 繪製所有候選框（綠色）
     if (result.boxes) {
       result.boxes
         .filter(function(box) { return box !== result.box; })
         .forEach(function(box) {
-          Quagga.ImageDebug.drawPath(box, { x: 0, y: 1 }, ctx, { color: 'rgba(74,144,226,0.4)', lineWidth: 1 });
+          Quagga.ImageDebug.drawPath(box, { x: 0, y: 1 }, ctx, { color: 'rgba(74,144,226,0.35)', lineWidth: 1 });
         });
     }
 
-    // 繪製最佳候選框（藍色粗線）
     if (result.box) {
       Quagga.ImageDebug.drawPath(result.box, { x: 0, y: 1 }, ctx, { color: '#4a90e2', lineWidth: 2 });
     }
 
-    // 繪製解碼位置線（橘紅色）
     if (result.codeResult && result.codeResult.code) {
       Quagga.ImageDebug.drawPath(result.line, { x: 'x', y: 'y' }, ctx, { color: '#ff6b35', lineWidth: 3 });
     }
   }
 
   // =============================================
-  // 條碼偵測回調（含信心值過濾 + 多幀確認）
+  // 條碼偵測：信心值過濾 + 多幀確認
   // =============================================
   function onDetected(data) {
     if (!data || !data.codeResult || !data.codeResult.code) return;
 
     var rawCode = data.codeResult.code;
 
-    // ── 1. 信心值過濾 ─────────────────────────────
-    // decodedCodes 是每個字元的解碼結果陣列，error 越低越準
+    // 信心值過濾
     var decodedCodes = data.codeResult.decodedCodes;
     if (decodedCodes && decodedCodes.length > 0) {
       var errValues = decodedCodes
@@ -473,41 +474,32 @@
 
       if (errValues.length > 0) {
         var avgError = errValues.reduce(function(a, b) { return a + b; }, 0) / errValues.length;
-        if (avgError > MAX_AVG_ERROR) {
-          // 信心值不足，丟棄此次結果
-          return;
-        }
+        if (avgError > MAX_AVG_ERROR) return;
       }
     }
 
-    // ── 2. 多幀確認 ───────────────────────────────
+    // 多幀確認
     var now = Date.now();
     var entry = pendingMap[rawCode];
 
     if (!entry || (now - entry.firstTime) > CONFIRM_WINDOW_MS) {
-      // 第一次見到此碼，或超過確認視窗時間 → 重新計數
       entry = { count: 1, firstTime: now };
     } else {
       entry.count++;
     }
     pendingMap[rawCode] = entry;
 
-    // 清除其他碼的計數（避免多碼干擾）
     Object.keys(pendingMap).forEach(function(key) {
       if (key !== rawCode) delete pendingMap[key];
     });
 
-    // 更新確認圓點 UI
     updateConfirmDots(Math.min(entry.count, CONFIRM_NEEDED));
 
     if (entry.count < CONFIRM_NEEDED) {
-      // 還沒達到確認次數，顯示進度提示
       setStatus('pending', '偵測到條碼（' + entry.count + '/' + CONFIRM_NEEDED + '）...');
       return;
     }
 
-    // ── 3. 確認通過，送出結果 ─────────────────────
-    console.log('[Scanner] 條碼確認通過:', rawCode);
     sendResult(rawCode);
   }
 
@@ -520,16 +512,16 @@
       Quagga.offProcessed(onProcessed);
       Quagga.offDetected(onDetected);
       Quagga.stop();
-    } catch (e) { /* 忽略停止時的錯誤 */ }
+    } catch (e) {}
     isScanning = false;
   }
 
   // =============================================
-  // 降級 UI：手動輸入
+  // 降級 UI
   // =============================================
   function showFallback(prefilledCode) {
     stopScanner();
-    document.getElementById('scanner-container').style.display = 'none';
+    document.querySelector('.camera-wrapper').style.display = 'none';
     var fb = document.getElementById('fallback');
     fb.style.display = 'flex';
     var input = document.getElementById('manual-input');
@@ -550,7 +542,6 @@
     document.getElementById('manual-input').addEventListener('keypress', function (e) {
       if (e.key === 'Enter') window.submitManual();
     });
-
     startScanner();
   });
 
